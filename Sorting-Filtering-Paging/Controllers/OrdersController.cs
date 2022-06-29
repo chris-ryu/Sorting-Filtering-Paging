@@ -28,13 +28,14 @@ namespace Sorting_Filtering_Paging.Controllers
             var filter = this.GetFilter();
 
             var deleg = ExpressionBuilder.GetExpression<Customer>(filter).Compile();
-            var filteredResultSet = baseQuery.Where(deleg);
+            var filteredResultSet = baseQuery.Where(deleg).AsQueryable();
             var total = filteredResultSet.Count();
 
-//            var orderedResultset = FirstName_sort 
-//                ? filteredResultSet.OrderByProperty("FirstName") 
-//                : filteredResultSet.OrderByPropertyDescending("FirstName");
-            var pagedResultSet = filteredResultSet
+            var orderedResultset = FirstName_sort 
+                ? filteredResultSet.OrderByProperty("FirstName") 
+                : filteredResultSet.OrderByPropertyDescending("FirstName");
+
+            var pagedResultSet = orderedResultset
                     .Skip((page - 1) * pageSize)
                     .Take(pageSize)
                     .ToList();
