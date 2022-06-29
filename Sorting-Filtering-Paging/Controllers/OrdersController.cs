@@ -7,13 +7,40 @@ namespace Sorting_Filtering_Paging.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class OrdersController : ControllerBase
+    public class OrdersController : ListBaseController
     {
         private readonly AdventureWorksContext _context;
 
-        public OrdersController(AdventureWorksContext context)
+        public OrdersController(AdventureWorksContext context, IHttpContextAccessor httpContextAccessor): base(httpContextAccessor)
         {
             _context = context;
+        }
+
+        [HttpGet("customers")]
+        public async Task<IActionResult> GetCustomerList(
+                [FromQuery]string Title_like, 
+                [FromQuery]bool FirstName_sort, 
+                [FromQuery]int page) 
+        {
+            int pageSize = 10;
+            var baseQuery = _context.Customers.AsQueryable();
+
+            var filter = this.GetFilter();
+
+            var deleg = ExpressionBuilder.GetExpression<Customer>(filter).Compile();
+            var filteredResultSet = baseQuery.Where(deleg);
+            var total = filteredResultSet.Count();
+
+//            var orderedResultset = FirstName_sort 
+//                ? filteredResultSet.OrderByProperty("FirstName") 
+//                : filteredResultSet.OrderByPropertyDescending("FirstName");
+            var pagedResultSet = filteredResultSet
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToList();
+
+            this.SetTotalCountHeader(total);
+            return Ok(pagedResultSet);
         }
 
         [HttpGet]

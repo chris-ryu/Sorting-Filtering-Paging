@@ -5,6 +5,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<AdventureWorksContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("Default"))
 );
+
+builder.Services.AddHttpContextAccessor();
 // Add services to the container.
 
 builder.Services.AddControllers();
